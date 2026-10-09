@@ -91,6 +91,7 @@ namespace LuxuryBridalStudio
                 OpenChildForm(new frmNhaCungCap());
             };
 
+
             // Nút Nhập kho: Mở frmHoaDonNhap
             btnNhapKho.Click += (s, e) =>
             {
