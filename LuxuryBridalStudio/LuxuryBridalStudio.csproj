@@ -47,6 +47,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Features\Contracts\ContractService.cs" />
+    <Compile Include="Features\Contracts\frmHopDong.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Features\Contracts\frmHopDong.Designer.cs">
+      <DependentUpon>frmHopDong.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Features\Empolyees\EmployeeService.cs" />
+    <Compile Include="Features\Empolyees\frmNhanSu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Features\Empolyees\frmNhanSu.Designer.cs">
+      <DependentUpon>frmNhanSu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Features\Returns\frmTraDo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Features\Returns\frmTraDo.Designer.cs">
+      <DependentUpon>frmTraDo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Features\Returns\ReturnService.cs" />
     <Compile Include="frmHoaDonNhap.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -77,11 +98,21 @@
     <Compile Include="frmSanPham.Designer.cs">
       <DependentUpon>frmSanPham.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmThongKe.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmThongKe.Designer.cs">
+      <DependentUpon>frmThongKe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Models\RentalContract.cs" />
+    <Compile Include="Models\StaffMember.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shared\BridalFeatureUi.cs" />
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmThongKe.resx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -104,5 +135,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

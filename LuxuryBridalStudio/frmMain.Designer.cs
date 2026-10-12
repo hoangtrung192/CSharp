@@ -87,7 +87,7 @@
             this.panelSidebar.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelSidebar.Location = new System.Drawing.Point(0, 0);
             this.panelSidebar.Name = "panelSidebar";
-            this.panelSidebar.Size = new System.Drawing.Size(230, 729);
+            this.panelSidebar.Size = new System.Drawing.Size(230, 770);
             this.panelSidebar.TabIndex = 0;
             // 
             // btnBaoCao
@@ -123,6 +123,7 @@
             this.btnNhanSu.Text = "👥  Nhân sự";
             this.btnNhanSu.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNhanSu.UseVisualStyleBackColor = true;
+            this.btnNhanSu.Click += new System.EventHandler(this.btnNhanSu_Click);
             // 
             // btnTraDo
             // 
@@ -273,7 +274,7 @@
             this.panelContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelContent.Location = new System.Drawing.Point(230, 0);
             this.panelContent.Name = "panelContent";
-            this.panelContent.Size = new System.Drawing.Size(1004, 729);
+            this.panelContent.Size = new System.Drawing.Size(1110, 770);
             this.panelContent.TabIndex = 1;
             // 
             // panelTable
@@ -298,6 +299,7 @@
             this.dgvLichTra.Name = "dgvLichTra";
             this.dgvLichTra.ReadOnly = true;
             this.dgvLichTra.RowHeadersVisible = false;
+            this.dgvLichTra.RowHeadersWidth = 51;
             this.dgvLichTra.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvLichTra.Size = new System.Drawing.Size(914, 165);
             this.dgvLichTra.TabIndex = 1;
@@ -308,7 +310,7 @@
             this.lblTableTitle.Font = new System.Drawing.Font("Segoe UI", 10.5F, System.Drawing.FontStyle.Bold);
             this.lblTableTitle.Location = new System.Drawing.Point(15, 15);
             this.lblTableTitle.Name = "lblTableTitle";
-            this.lblTableTitle.Size = new System.Drawing.Size(171, 19);
+            this.lblTableTitle.Size = new System.Drawing.Size(170, 19);
             this.lblTableTitle.TabIndex = 0;
             this.lblTableTitle.Text = "Lịch hẹn trả đồ hôm nay";
             // 
@@ -343,7 +345,7 @@
             this.lblRightChartTitle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.lblRightChartTitle.Location = new System.Drawing.Point(15, 10);
             this.lblRightChartTitle.Name = "lblRightChartTitle";
-            this.lblRightChartTitle.Size = new System.Drawing.Size(188, 19);
+            this.lblRightChartTitle.Size = new System.Drawing.Size(178, 19);
             this.lblRightChartTitle.TabIndex = 0;
             this.lblRightChartTitle.Text = "Tỷ lệ trang phục cho thuê";
             // 
@@ -377,7 +379,7 @@
             this.lblLeftChartTitle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.lblLeftChartTitle.Location = new System.Drawing.Point(15, 10);
             this.lblLeftChartTitle.Name = "lblLeftChartTitle";
-            this.lblLeftChartTitle.Size = new System.Drawing.Size(142, 19);
+            this.lblLeftChartTitle.Size = new System.Drawing.Size(144, 19);
             this.lblLeftChartTitle.TabIndex = 0;
             this.lblLeftChartTitle.Text = "Doanh thu theo tuần";
             // 
@@ -409,7 +411,7 @@
             this.lblCardTitle4.ForeColor = System.Drawing.Color.Gray;
             this.lblCardTitle4.Location = new System.Drawing.Point(15, 12);
             this.lblCardTitle4.Name = "lblCardTitle4";
-            this.lblCardTitle4.Size = new System.Drawing.Size(133, 17);
+            this.lblCardTitle4.Size = new System.Drawing.Size(129, 17);
             this.lblCardTitle4.TabIndex = 1;
             this.lblCardTitle4.Text = "Lịch hẹn trả hôm nay";
             // 
@@ -430,7 +432,7 @@
             this.lblTrangPhuc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
             this.lblTrangPhuc.Location = new System.Drawing.Point(15, 38);
             this.lblTrangPhuc.Name = "lblTrangPhuc";
-            this.lblTrangPhuc.Size = new System.Drawing.Size(74, 28);
+            this.lblTrangPhuc.Size = new System.Drawing.Size(78, 28);
             this.lblTrangPhuc.TabIndex = 2;
             this.lblTrangPhuc.Text = "185 bộ";
             // 
@@ -441,7 +443,7 @@
             this.lblCardTitle3.ForeColor = System.Drawing.Color.Gray;
             this.lblCardTitle3.Location = new System.Drawing.Point(15, 12);
             this.lblCardTitle3.Name = "lblCardTitle3";
-            this.lblCardTitle3.Size = new System.Drawing.Size(117, 17);
+            this.lblCardTitle3.Size = new System.Drawing.Size(129, 17);
             this.lblCardTitle3.TabIndex = 1;
             this.lblCardTitle3.Text = "Trang phục sẵn sàng";
             // 
@@ -473,7 +475,7 @@
             this.lblCardTitle2.ForeColor = System.Drawing.Color.Gray;
             this.lblCardTitle2.Location = new System.Drawing.Point(15, 12);
             this.lblCardTitle2.Name = "lblCardTitle2";
-            this.lblCardTitle2.Size = new System.Drawing.Size(120, 17);
+            this.lblCardTitle2.Size = new System.Drawing.Size(131, 17);
             this.lblCardTitle2.TabIndex = 1;
             this.lblCardTitle2.Text = "Hợp đồng đang thuê";
             // 
@@ -505,7 +507,7 @@
             this.lblCardTitle1.ForeColor = System.Drawing.Color.Gray;
             this.lblCardTitle1.Location = new System.Drawing.Point(12, 12);
             this.lblCardTitle1.Name = "lblCardTitle1";
-            this.lblCardTitle1.Size = new System.Drawing.Size(100, 17);
+            this.lblCardTitle1.Size = new System.Drawing.Size(105, 17);
             this.lblCardTitle1.TabIndex = 1;
             this.lblCardTitle1.Text = "Doanh thu tháng";
             // 
@@ -514,7 +516,7 @@
             this.lblToday.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblToday.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.lblToday.ForeColor = System.Drawing.Color.Gray;
-            this.lblToday.Location = new System.Drawing.Point(825, 43);
+            this.lblToday.Location = new System.Drawing.Point(931, 43);
             this.lblToday.Name = "lblToday";
             this.lblToday.Size = new System.Drawing.Size(150, 20);
             this.lblToday.TabIndex = 2;
@@ -526,7 +528,7 @@
             this.lblAdmin.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblAdmin.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.lblAdmin.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.lblAdmin.Location = new System.Drawing.Point(775, 20);
+            this.lblAdmin.Location = new System.Drawing.Point(881, 20);
             this.lblAdmin.Name = "lblAdmin";
             this.lblAdmin.Size = new System.Drawing.Size(200, 20);
             this.lblAdmin.TabIndex = 1;
@@ -540,7 +542,7 @@
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
             this.lblTitle.Location = new System.Drawing.Point(25, 25);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(227, 32);
+            this.lblTitle.Size = new System.Drawing.Size(247, 32);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "Tổng quan hệ thống";
             // 
@@ -548,7 +550,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1234, 729);
+            this.ClientSize = new System.Drawing.Size(1340, 770);
             this.Controls.Add(this.panelContent);
             this.Controls.Add(this.panelSidebar);
             this.Font = new System.Drawing.Font("Segoe UI", 9.5F);
