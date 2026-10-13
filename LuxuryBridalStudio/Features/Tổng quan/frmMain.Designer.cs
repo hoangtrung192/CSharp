@@ -22,6 +22,7 @@
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.panelSidebar = new System.Windows.Forms.Panel();
+            this.btnDangXuat = new System.Windows.Forms.Button();
             this.btnBaoCao = new System.Windows.Forms.Button();
             this.btnNhanSu = new System.Windows.Forms.Button();
             this.btnTraDo = new System.Windows.Forms.Button();
@@ -74,6 +75,7 @@
             // panelSidebar
             // 
             this.panelSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(74)))), ((int)(((byte)(21)))), ((int)(((byte)(37)))));
+            this.panelSidebar.Controls.Add(this.btnDangXuat);
             this.panelSidebar.Controls.Add(this.btnBaoCao);
             this.panelSidebar.Controls.Add(this.btnNhanSu);
             this.panelSidebar.Controls.Add(this.btnTraDo);
@@ -89,6 +91,24 @@
             this.panelSidebar.Name = "panelSidebar";
             this.panelSidebar.Size = new System.Drawing.Size(230, 770);
             this.panelSidebar.TabIndex = 0;
+            // 
+            // btnDangXuat
+            // 
+            this.btnDangXuat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(15)))), ((int)(((byte)(28)))));
+            this.btnDangXuat.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnDangXuat.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.btnDangXuat.FlatAppearance.BorderSize = 0;
+            this.btnDangXuat.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDangXuat.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnDangXuat.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(180)))), ((int)(((byte)(190)))));
+            this.btnDangXuat.Location = new System.Drawing.Point(0, 720);
+            this.btnDangXuat.Name = "btnDangXuat";
+            this.btnDangXuat.Padding = new System.Windows.Forms.Padding(18, 0, 0, 0);
+            this.btnDangXuat.Size = new System.Drawing.Size(230, 50);
+            this.btnDangXuat.TabIndex = 10;
+            this.btnDangXuat.Text = "🚪  Đăng xuất";
+            this.btnDangXuat.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDangXuat.UseVisualStyleBackColor = false;
             // 
             // btnBaoCao
             // 
@@ -123,8 +143,7 @@
             this.btnNhanSu.Text = "👥  Nhân sự";
             this.btnNhanSu.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNhanSu.UseVisualStyleBackColor = true;
-            this.btnNhanSu.Click += new System.EventHandler(this.btnNhanSu_Click);
-            // 
+            
             // btnTraDo
             // 
             this.btnTraDo.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -596,6 +615,7 @@
         private System.Windows.Forms.Button btnNhaCungCap;
         private System.Windows.Forms.Button btnSanPham;
         private System.Windows.Forms.Button btnKhachHang;
+        private System.Windows.Forms.Button btnDangXuat;
         private System.Windows.Forms.Panel panelContent;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label lblAdmin;

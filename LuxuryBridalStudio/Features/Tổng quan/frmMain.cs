@@ -45,6 +45,7 @@ namespace LuxuryBridalStudio
             btnTraDo.Click += btnTraDo_Click;
             btnNhanSu.Click += btnNhanSu_Click;
             btnBaoCao.Click += btnBaoCao_Click;
+            btnDangXuat.Click += btnDangXuat_Click;
 
             // Phân quyền ẩn/hiện nút menu
             PhanQuyenMenu();
@@ -192,6 +193,18 @@ namespace LuxuryBridalStudio
         {
             ChonNutMenu(btnBaoCao);
             OpenChildForm(new frmThongKe());
+        }
+
+        private void btnDangXuat_Click(object sender, EventArgs e)
+        {
+            DialogResult dr = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (dr == DialogResult.Yes)
+            {
+                this.Hide();
+                frmDangNhap loginForm = new frmDangNhap();
+                loginForm.ShowDialog();
+                this.Close();
+            }
         }
 
         // Nạp dữ liệu các biểu đồ và bảng trên màn hình Tổng quan
