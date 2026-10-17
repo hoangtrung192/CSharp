@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace LuxuryBridalStudio
 {
@@ -11,6 +8,9 @@ namespace LuxuryBridalStudio
     {
         public string Ma { get; set; }
         public string KhachHang { get; set; }
+        public string CustomerCode { get; set; }
+        [Browsable(false)]
+        public List<RentalLine> Lines { get; set; } = new List<RentalLine>();
         public string SanPham { get; set; }
         public DateTime NgayThue { get; set; }
         public DateTime HenTra { get; set; }

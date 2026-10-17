@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -8,248 +9,120 @@ namespace LuxuryBridalStudio
 {
     public partial class frmMain : Form
     {
-        // Khai báo biến rỗng, nhận trực tiếp từ CSDL sau khi đăng nhập
-        string currentUserName = "";
-        string currentUserRole = "";
+        private Form activeForm;
 
-        // Form con đang mở trong panelContent
-        Form activeForm = null;
-
-        // Constructor chính nhận dữ liệu đăng nhập
-        public frmMain(string hoTen, string vaiTro)
-        {
-            InitializeComponent();
-            currentUserName = hoTen;
-            currentUserRole = vaiTro;
-        }
-
-        // Constructor mặc định (để Visual Studio mở được chế độ Design)
-        public frmMain()
-        {
-            InitializeComponent();
-        }
+        public frmMain() { InitializeComponent(); }
 
         private void frmMain_Load(object sender, EventArgs e)
         {
-            // Hiển thị tên và ngày tháng lên góc phải
-            lblAdmin.Text = currentUserName + " (" + currentUserRole + ")";
-            lblToday.Text = DateTime.Now.ToString("dd/MM/yyyy");
-
-            // Gán sự kiện Click cho tất cả các nút điều hướng
+            if (AppSession.User == null) { Close(); return; }
+            lblAdmin.Text = AppSession.User.DisplayName + " (" + AppSession.User.Role + ")";
+            Text = "Luxury Bridal Studio";
             btnTongQuan.Click += btnTongQuan_Click;
-            btnKhachHang.Click += btnKhachHang_Click;
-            btnSanPham.Click += btnSanPham_Click;
-            btnNhaCungCap.Click += btnNhaCungCap_Click;
-            btnNhapKho.Click += btnNhapKho_Click;
-            btnHopDong.Click += btnHopDong_Click;
-            btnTraDo.Click += btnTraDo_Click;
-            btnNhanSu.Click += btnNhanSu_Click;
-            btnBaoCao.Click += btnBaoCao_Click;
-            btnDangXuat.Click += btnDangXuat_Click;
-
-            // Phân quyền ẩn/hiện nút menu
-            PhanQuyenMenu();
-
-            // Nạp dữ liệu mẫu cho Tổng quan
-            NapDuLieuTongQuan();
+            btnKhachHang.Click += (s, a) => OpenFeature(Feature.Customers, btnKhachHang, () => new frmKhachHang());
+            btnSanPham.Click += (s, a) => OpenFeature(Feature.Products, btnSanPham, () => new frmSanPham());
+            btnNhaCungCap.Click += (s, a) => OpenFeature(Feature.Suppliers, btnNhaCungCap, () => new frmNhaCungCap());
+            btnNhapKho.Click += (s, a) => OpenFeature(Feature.Receipts, btnNhapKho, () => new frmHoaDonNhap());
+            btnHopDong.Click += (s, a) => OpenFeature(Feature.Contracts, btnHopDong, () => new frmHopDong());
+            btnTraDo.Click += (s, a) => OpenFeature(Feature.Returns, btnTraDo, () => new frmTraDo());
+            btnNhanSu.Click += (s, a) => OpenFeature(Feature.Employees, btnNhanSu, () => new frmNhanSu());
+            btnBaoCao.Click += (s, a) => OpenFeature(Feature.Reports, btnBaoCao, () => new frmThongKe(AppSession.Data.Transactions));
+            btnDangXuat.Click += (s, a) => { if (BridalFeatureUi.Confirm("Bạn có muốn đăng xuất?")) Close(); };
+            btnKhachHang.Visible = AppSession.User.Can(Feature.Customers);
+            btnSanPham.Visible = AppSession.User.Can(Feature.Products);
+            btnNhaCungCap.Visible = AppSession.User.Can(Feature.Suppliers);
+            btnNhapKho.Visible = AppSession.User.Can(Feature.Receipts);
+            btnHopDong.Visible = AppSession.User.Can(Feature.Contracts);
+            btnTraDo.Visible = AppSession.User.Can(Feature.Returns);
+            btnNhanSu.Visible = AppSession.User.Can(Feature.Employees);
+            btnBaoCao.Visible = AppSession.User.Can(Feature.Reports);
+            // Do not expose customer or financial information through the overview to warehouse staff.
+            panelLeftChart.Visible = pnlCard1.Visible = AppSession.User.Can(Feature.Reports);
+            panelTable.Visible = AppSession.User.Can(Feature.Customers);
+            FormClosing += (s, a) => { if (!CloseActiveForm()) a.Cancel = true; };
+            BridalFeatureUi.Run(NapDuLieuTongQuan);
         }
 
-        // Hàm phân quyền đơn giản
-        void PhanQuyenMenu()
+        private bool CloseActiveForm()
         {
-            if (currentUserRole == "Quản lý")
-            {
-                // Quản lý hiển thị tất cả các nút
-                btnTongQuan.Visible = true;
-                btnKhachHang.Visible = true;
-                btnSanPham.Visible = true;
-                btnNhaCungCap.Visible = true;
-                btnNhapKho.Visible = true;
-                btnHopDong.Visible = true;
-                btnTraDo.Visible = true;
-                btnNhanSu.Visible = true;
-                btnBaoCao.Visible = true;
-            }
-            else if (currentUserRole == "Thủ kho")
-            {
-                // Thủ kho chỉ quản lý sản phẩm, nhà cung cấp và nhập kho
-                btnTongQuan.Visible = true;
-                btnSanPham.Visible = true;
-                btnNhaCungCap.Visible = true;
-                btnNhapKho.Visible = true;
-
-                btnKhachHang.Visible = false;
-                btnHopDong.Visible = false;
-                btnTraDo.Visible = false;
-                btnNhanSu.Visible = false;
-                btnBaoCao.Visible = false;
-            }
-            else // "Nhân viên"
-            {
-                // Nhân viên chỉ làm hợp đồng thuê và trả đồ cho khách
-                btnTongQuan.Visible = true;
-                btnKhachHang.Visible = true;
-                btnSanPham.Visible = true;
-                btnHopDong.Visible = true;
-                btnTraDo.Visible = true;
-
-                btnNhaCungCap.Visible = false;
-                btnNhapKho.Visible = false;
-                btnNhanSu.Visible = false;
-                btnBaoCao.Visible = false;
-            }
+            if (activeForm == null) return true;
+            activeForm.Close();
+            if (!activeForm.IsDisposed) return false;
+            activeForm = null; return true;
         }
 
-        // Hàm mở một form con vào panelContent
-        void OpenChildForm(Form childForm)
+        private void OpenFeature(Feature feature, Button button, Func<Form> create)
         {
-            if (activeForm != null)
+            BridalFeatureUi.Run(() =>
             {
-                activeForm.Close();
-            }
-
-            activeForm = childForm;
-            childForm.TopLevel = false;
-            childForm.FormBorderStyle = FormBorderStyle.None;
-            childForm.Dock = DockStyle.Fill;
-
-            panelContent.Controls.Add(childForm);
-            panelContent.Tag = childForm;
-            childForm.BringToFront();
-            childForm.Show();
+                AppSession.Require(feature);
+                if (!CloseActiveForm()) return;
+                AppSession.Data.Refresh();
+                var child = create();
+                activeForm = child;
+                child.TopLevel = false;
+                child.FormBorderStyle = FormBorderStyle.None;
+                child.Dock = DockStyle.Fill;
+                panelContent.Controls.Add(child);
+                child.BringToFront();
+                child.Show();
+                ChonNutMenu(button);
+            });
         }
 
-        // Đổi màu nút khi được bấm
-        void ChonNutMenu(Button btn)
+        private void ChonNutMenu(Button selected)
         {
-            // Trả tất cả nút về màu nền cũ
-            btnTongQuan.BackColor = Color.FromArgb(74, 21, 37);
-            btnKhachHang.BackColor = Color.FromArgb(74, 21, 37);
-            btnSanPham.BackColor = Color.FromArgb(74, 21, 37);
-            btnNhaCungCap.BackColor = Color.FromArgb(74, 21, 37);
-            btnNhapKho.BackColor = Color.FromArgb(74, 21, 37);
-            btnHopDong.BackColor = Color.FromArgb(74, 21, 37);
-            btnTraDo.BackColor = Color.FromArgb(74, 21, 37);
-            btnNhanSu.BackColor = Color.FromArgb(74, 21, 37);
-            btnBaoCao.BackColor = Color.FromArgb(74, 21, 37);
-
-            // Đổi màu nút đang chọn
-            btn.BackColor = Color.FromArgb(194, 94, 114);
+            foreach (var button in new[] { btnTongQuan, btnKhachHang, btnSanPham, btnNhaCungCap, btnNhapKho, btnHopDong, btnTraDo, btnNhanSu, btnBaoCao })
+                button.BackColor = button == selected ? Color.FromArgb(194, 94, 114) : Color.FromArgb(74, 21, 37);
         }
 
-        // Sự kiện Click của các nút menu
         private void btnTongQuan_Click(object sender, EventArgs e)
         {
+            if (!CloseActiveForm()) return;
             ChonNutMenu(btnTongQuan);
-            if (activeForm != null)
-            {
-                activeForm.Close(); // Đóng form con để lộ giao diện Tổng quan bên dưới
-            }
+            BridalFeatureUi.Run(NapDuLieuTongQuan);
         }
 
-        private void btnKhachHang_Click(object sender, EventArgs e)
+        private void NapDuLieuTongQuan()
         {
-            ChonNutMenu(btnKhachHang);
-            OpenChildForm(new frmKhachHang());
-        }
+            var data = AppSession.Data;
+            data.Refresh();
+            DateTime today = DateTime.Today;
+            lblToday.Text = today.ToString("dd/MM/yyyy");
+            lblTitle.Text = "Tổng quan";
+            lblCardTitle1.Text = "Thực thu tháng";
+            lblLeftChartTitle.Text = "Thực thu 7 ngày gần nhất";
+            lblTableTitle.Text = "Lịch trả hôm nay và quá hạn";
+            lblDoanhThu.Text = InputRules.Money(data.Transactions.Where(x => x.Ngay.Year == today.Year && x.Ngay.Month == today.Month).Sum(x => x.Thu - x.Hoan));
+            lblHopDong.Text = data.Contracts.Count(x => x.TrangThai == RentalStatus.Active).ToString();
+            lblLichTra.Text = data.Contracts.Count(x => x.TrangThai == RentalStatus.Active && x.HenTra.Date <= today).ToString();
+            lblCardTitle4.Text = "Đến hạn / quá hạn";
+            lblTrangPhuc.Text = data.Products.AsEnumerable().Sum(x => data.Available((string)x[0], today, today)) + " bộ";
 
-        private void btnSanPham_Click(object sender, EventArgs e)
-        {
-            ChonNutMenu(btnSanPham);
-            OpenChildForm(new frmSanPham());
-        }
-
-        private void btnNhaCungCap_Click(object sender, EventArgs e)
-        {
-            ChonNutMenu(btnNhaCungCap);
-            OpenChildForm(new frmNhaCungCap());
-        }
-
-        private void btnNhapKho_Click(object sender, EventArgs e)
-        {
-            ChonNutMenu(btnNhapKho);
-            OpenChildForm(new frmHoaDonNhap());
-        }
-
-        private void btnHopDong_Click(object sender, EventArgs e)
-        {
-            ChonNutMenu(btnHopDong);
-            OpenChildForm(new frmHopDong());
-        }
-
-        private void btnTraDo_Click(object sender, EventArgs e)
-        {
-            ChonNutMenu(btnTraDo);
-            OpenChildForm(new frmTraDo());
-        }
-
-        private void btnNhanSu_Click(object sender, EventArgs e)
-        {
-            ChonNutMenu(btnNhanSu);
-            OpenChildForm(new frmNhanSu());
-        }
-
-        private void btnBaoCao_Click(object sender, EventArgs e)
-        {
-            ChonNutMenu(btnBaoCao);
-            OpenChildForm(new frmThongKe());
-        }
-
-        private void btnDangXuat_Click(object sender, EventArgs e)
-        {
-            DialogResult dr = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (dr == DialogResult.Yes)
-            {
-                this.Hide();
-                frmDangNhap loginForm = new frmDangNhap();
-                loginForm.ShowDialog();
-                this.Close();
-            }
-        }
-
-        // Nạp dữ liệu các biểu đồ và bảng trên màn hình Tổng quan
-        void NapDuLieuTongQuan()
-        {
-            // 1. Biểu đồ cột Doanh thu
             chartDoanhThu.Series.Clear();
-            Series seriesCot = new Series("DoanhThu");
-            seriesCot.ChartType = SeriesChartType.Column;
-            seriesCot.Color = Color.FromArgb(194, 94, 114);
-
-            seriesCot.Points.AddXY("T2", 75);
-            seriesCot.Points.AddXY("T3", 140);
-            seriesCot.Points.AddXY("T4", 100);
-            seriesCot.Points.AddXY("T5", 160);
-            seriesCot.Points.AddXY("T6", 120);
-            seriesCot.Points.AddXY("T7", 145);
-            seriesCot.Points.AddXY("CN", 175);
-            chartDoanhThu.Series.Add(seriesCot);
-
-            // 2. Biểu đồ tròn Tỷ lệ trang phục
+            var revenue = new Series("Thực thu") { ChartType = SeriesChartType.Column, Color = Color.FromArgb(194, 94, 114) };
+            for (int i = -6; i <= 0; i++)
+            {
+                DateTime day = today.AddDays(i);
+                revenue.Points.AddXY(day.ToString("dd/MM"), (double)(data.Transactions.Where(x => x.Ngay.Date == day).Sum(x => x.Thu - x.Hoan) / 1000000m));
+            }
+            chartDoanhThu.Series.Add(revenue);
+            chartDoanhThu.ChartAreas[0].AxisY.Title = "Triệu đồng";
             chartTyLe.Series.Clear();
-            Series seriesTron = new Series("TyLe");
-            seriesTron.ChartType = SeriesChartType.Doughnut;
+            var composition = new Series("Đang thuê") { ChartType = SeriesChartType.Doughnut, LegendText = "#VALX", Label = "#PERCENT{P0}" };
+            foreach (var group in data.Contracts.Where(x => x.TrangThai == RentalStatus.Active).SelectMany(x => x.Lines).GroupBy(x => x.Category))
+                composition.Points.AddXY(group.Key, group.Sum(x => x.Quantity));
+            chartTyLe.Series.Add(composition);
+            chartTyLe.Titles.Clear();
+            if (composition.Points.Count == 0) chartTyLe.Titles.Add("Chưa có hợp đồng đang thuê");
 
-            seriesTron.Points.AddXY("Váy cưới 55%", 55);
-            seriesTron.Points.AddXY("Áo dài 25%", 25);
-            seriesTron.Points.AddXY("Vest 20%", 20);
-
-            seriesTron.Points[0].Color = Color.FromArgb(194, 94, 114);
-            seriesTron.Points[1].Color = Color.FromArgb(220, 140, 155);
-            seriesTron.Points[2].Color = Color.FromArgb(235, 190, 200);
-            chartTyLe.Series.Add(seriesTron);
-
-            // 3. Bảng lịch hẹn trả đồ
-            DataTable dt = new DataTable();
-            dt.Columns.Add("Mã HĐ");
-            dt.Columns.Add("Khách hàng");
-            dt.Columns.Add("Điện thoại");
-            dt.Columns.Add("Trang phục");
-            dt.Columns.Add("Trạng thái");
-
-            dt.Rows.Add("HĐ 50001", "Nguyễn Thu Hà", "0901234567", "Váy cưới, Áo dài", "Đã trả");
-            dt.Rows.Add("HĐ 50002", "Nguyễn Văn B", "0987654321", "Váy cưới, Vest", "Chưa trả");
-            dgvLichTra.DataSource = dt;
+            var table = new DataTable();
+            foreach (string column in new[] { "Mã HĐ", "Khách hàng", "Trang phục", "Hẹn trả", "Trạng thái" }) table.Columns.Add(column);
+            foreach (var rental in data.Contracts.Where(x => x.TrangThai == RentalStatus.Active && x.HenTra.Date <= today).OrderBy(x => x.HenTra))
+                table.Rows.Add(rental.Ma, rental.KhachHang, rental.SanPham, rental.HenTra.ToString("dd/MM/yyyy"), rental.HenTra.Date < today ? "Quá hạn" : "Đến hạn");
+            var previous = dgvLichTra.DataSource as DataTable;
+            dgvLichTra.DataSource = table;
+            if (previous != null) previous.Dispose();
         }
     }
 }

@@ -109,7 +109,7 @@
             this.lblTieuDe.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(39)))), ((int)(((byte)(51)))));
             this.lblTieuDe.Location = new System.Drawing.Point(0, 0);
             this.lblTieuDe.Name = "lblTieuDe";
-            this.lblTieuDe.Size = new System.Drawing.Size(425, 54);
+            this.lblTieuDe.Size = new System.Drawing.Size(362, 46);
             this.lblTieuDe.TabIndex = 0;
             this.lblTieuDe.Text = "BÁO CÁO & THỐNG KÊ";
             // 
@@ -119,7 +119,7 @@
             this.lblNguon.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(145)))), ((int)(((byte)(77)))), ((int)(((byte)(89)))));
             this.lblNguon.Location = new System.Drawing.Point(2, 42);
             this.lblNguon.Name = "lblNguon";
-            this.lblNguon.Size = new System.Drawing.Size(345, 28);
+            this.lblNguon.Size = new System.Drawing.Size(304, 23);
             this.lblNguon.TabIndex = 1;
             this.lblNguon.Text = "DỮ LIỆU MẪU • Chưa kết nối database";
             // 
@@ -148,7 +148,7 @@
             this.lblTu.Location = new System.Drawing.Point(3, 9);
             this.lblTu.Margin = new System.Windows.Forms.Padding(3, 9, 3, 0);
             this.lblTu.Name = "lblTu";
-            this.lblTu.Size = new System.Drawing.Size(82, 28);
+            this.lblTu.Size = new System.Drawing.Size(71, 23);
             this.lblTu.TabIndex = 0;
             this.lblTu.Text = "Từ ngày";
             // 
@@ -156,18 +156,18 @@
             // 
             this.dtpTuNgay.CustomFormat = "dd/MM/yyyy";
             this.dtpTuNgay.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpTuNgay.Location = new System.Drawing.Point(91, 3);
+            this.dtpTuNgay.Location = new System.Drawing.Point(80, 3);
             this.dtpTuNgay.Name = "dtpTuNgay";
-            this.dtpTuNgay.Size = new System.Drawing.Size(125, 34);
+            this.dtpTuNgay.Size = new System.Drawing.Size(125, 30);
             this.dtpTuNgay.TabIndex = 1;
             // 
             // lblDen
             // 
             this.lblDen.AutoSize = true;
-            this.lblDen.Location = new System.Drawing.Point(222, 9);
+            this.lblDen.Location = new System.Drawing.Point(211, 9);
             this.lblDen.Margin = new System.Windows.Forms.Padding(3, 9, 3, 0);
             this.lblDen.Name = "lblDen";
-            this.lblDen.Size = new System.Drawing.Size(95, 28);
+            this.lblDen.Size = new System.Drawing.Size(83, 23);
             this.lblDen.TabIndex = 2;
             this.lblDen.Text = "Đến ngày";
             // 
@@ -175,9 +175,9 @@
             // 
             this.dtpDenNgay.CustomFormat = "dd/MM/yyyy";
             this.dtpDenNgay.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpDenNgay.Location = new System.Drawing.Point(323, 3);
+            this.dtpDenNgay.Location = new System.Drawing.Point(300, 3);
             this.dtpDenNgay.Name = "dtpDenNgay";
-            this.dtpDenNgay.Size = new System.Drawing.Size(125, 34);
+            this.dtpDenNgay.Size = new System.Drawing.Size(125, 30);
             this.dtpDenNgay.TabIndex = 3;
             // 
             // cboNhom
@@ -189,9 +189,9 @@
             "Vest",
             "Áo dài",
             "Phụ kiện"});
-            this.cboNhom.Location = new System.Drawing.Point(454, 3);
+            this.cboNhom.Location = new System.Drawing.Point(431, 3);
             this.cboNhom.Name = "cboNhom";
-            this.cboNhom.Size = new System.Drawing.Size(140, 36);
+            this.cboNhom.Size = new System.Drawing.Size(140, 31);
             this.cboNhom.TabIndex = 4;
             // 
             // cboGom
@@ -200,9 +200,9 @@
             this.cboGom.Items.AddRange(new object[] {
             "Theo ngày",
             "Theo tháng"});
-            this.cboGom.Location = new System.Drawing.Point(600, 3);
+            this.cboGom.Location = new System.Drawing.Point(577, 3);
             this.cboGom.Name = "cboGom";
-            this.cboGom.Size = new System.Drawing.Size(140, 36);
+            this.cboGom.Size = new System.Drawing.Size(140, 31);
             this.cboGom.TabIndex = 5;
             // 
             // btnLoc
@@ -210,7 +210,7 @@
             this.btnLoc.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(197)))), ((int)(((byte)(112)))), ((int)(((byte)(126)))));
             this.btnLoc.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLoc.ForeColor = System.Drawing.Color.White;
-            this.btnLoc.Location = new System.Drawing.Point(746, 3);
+            this.btnLoc.Location = new System.Drawing.Point(723, 3);
             this.btnLoc.Name = "btnLoc";
             this.btnLoc.Size = new System.Drawing.Size(106, 32);
             this.btnLoc.TabIndex = 6;
@@ -223,7 +223,7 @@
             this.btnThangNay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(197)))), ((int)(((byte)(112)))), ((int)(((byte)(126)))));
             this.btnThangNay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnThangNay.ForeColor = System.Drawing.Color.White;
-            this.btnThangNay.Location = new System.Drawing.Point(858, 3);
+            this.btnThangNay.Location = new System.Drawing.Point(835, 3);
             this.btnThangNay.Name = "btnThangNay";
             this.btnThangNay.Size = new System.Drawing.Size(106, 32);
             this.btnThangNay.TabIndex = 7;
@@ -236,7 +236,7 @@
             this.btnLamMoi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(197)))), ((int)(((byte)(112)))), ((int)(((byte)(126)))));
             this.btnLamMoi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLamMoi.ForeColor = System.Drawing.Color.White;
-            this.btnLamMoi.Location = new System.Drawing.Point(970, 3);
+            this.btnLamMoi.Location = new System.Drawing.Point(947, 3);
             this.btnLamMoi.Name = "btnLamMoi";
             this.btnLamMoi.Size = new System.Drawing.Size(106, 32);
             this.btnLamMoi.TabIndex = 8;
@@ -249,7 +249,7 @@
             this.btnXuat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(197)))), ((int)(((byte)(112)))), ((int)(((byte)(126)))));
             this.btnXuat.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnXuat.ForeColor = System.Drawing.Color.White;
-            this.btnXuat.Location = new System.Drawing.Point(3, 43);
+            this.btnXuat.Location = new System.Drawing.Point(1059, 3);
             this.btnXuat.Name = "btnXuat";
             this.btnXuat.Size = new System.Drawing.Size(106, 32);
             this.btnXuat.TabIndex = 9;
@@ -293,7 +293,7 @@
             this.title0.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(95)))), ((int)(((byte)(102)))));
             this.title0.Location = new System.Drawing.Point(12, 10);
             this.title0.Name = "title0";
-            this.title0.Size = new System.Drawing.Size(154, 28);
+            this.title0.Size = new System.Drawing.Size(136, 23);
             this.title0.TabIndex = 0;
             this.title0.Text = "TỔNG TIỀN THU";
             // 
@@ -327,7 +327,7 @@
             this.title1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(95)))), ((int)(((byte)(102)))));
             this.title1.Location = new System.Drawing.Point(12, 10);
             this.title1.Name = "title1";
-            this.title1.Size = new System.Drawing.Size(114, 28);
+            this.title1.Size = new System.Drawing.Size(100, 23);
             this.title1.TabIndex = 0;
             this.title1.Text = "HOÀN TIỀN";
             // 
@@ -361,7 +361,7 @@
             this.title2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(95)))), ((int)(((byte)(102)))));
             this.title2.Location = new System.Drawing.Point(12, 10);
             this.title2.Name = "title2";
-            this.title2.Size = new System.Drawing.Size(105, 28);
+            this.title2.Size = new System.Drawing.Size(92, 23);
             this.title2.TabIndex = 0;
             this.title2.Text = "THỰC THU";
             // 
@@ -395,7 +395,7 @@
             this.title3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(95)))), ((int)(((byte)(102)))));
             this.title3.Location = new System.Drawing.Point(12, 10);
             this.title3.Name = "title3";
-            this.title3.Size = new System.Drawing.Size(140, 28);
+            this.title3.Size = new System.Drawing.Size(123, 23);
             this.title3.TabIndex = 0;
             this.title3.Text = "SỐ GIAO DỊCH";
             // 
@@ -504,7 +504,7 @@
             // 
             // frmThongKe
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1240, 800);
             this.Controls.Add(this.layout);

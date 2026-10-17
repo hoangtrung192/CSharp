@@ -1,53 +1,86 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace LuxuryBridalStudio
 {
-public sealed class ContractService
+    public sealed class ContractService
     {
-        private readonly List<RentalContract> rentals;
-        public ContractService(List<RentalContract> data)
-        {
-            if (data == null) throw new ArgumentNullException("data");
-            if (data.Any(x => x == null || string.IsNullOrWhiteSpace(x.Ma)) || data.Select(x => x.Ma).Distinct().Count() != data.Count)
-                throw new ArgumentException("Dữ liệu phải có mã không rỗng, không trùng và không chứa phần tử null.", "data");
-            rentals = data;
-        }
-
-        private string NextCode()
-        {
-            int number = 1;
-            while (rentals.Any(x => x.Ma == "HD" + number.ToString("0000"))) number++;
-            return "HD" + number.ToString("0000");
-        }
-
+        private readonly StudioWorkspace data;
+        public ContractService(StudioWorkspace workspace) { data = workspace ?? throw new ArgumentNullException("workspace"); }
 
         public List<RentalContract> Search(string query)
         {
-
-            return rentals.Where(x => (x.Ma + " " + x.KhachHang).IndexOf(query ?? "", StringComparison.CurrentCultureIgnoreCase) >= 0).Select(Clone).ToList();
+            AppSession.Require(Feature.Contracts);
+            return data.Contracts.Where(x => (x.Ma + " " + x.KhachHang + " " + x.SanPham).IndexOf(query ?? "", StringComparison.CurrentCultureIgnoreCase) >= 0)
+                .Select(Clone).ToList();
         }
+
         internal static RentalContract Clone(RentalContract x)
         {
-            return new RentalContract { Ma=x.Ma, KhachHang=x.KhachHang, SanPham=x.SanPham, NgayThue=x.NgayThue, HenTra=x.HenTra, TienThue=x.TienThue, DaThu=x.DaThu, TrangThai=x.TrangThai, NgayTra=x.NgayTra, PhuPhi=x.PhuPhi, ThuKhiTra=x.ThuKhiTra, GhiChu=x.GhiChu };
+            return new RentalContract { Ma = x.Ma, CustomerCode = x.CustomerCode, KhachHang = x.KhachHang, SanPham = x.SanPham,
+                Lines = x.Lines.Select(l => l.Clone()).ToList(), NgayThue = x.NgayThue, HenTra = x.HenTra,
+                TienThue = x.TienThue, DaThu = x.DaThu, TrangThai = x.TrangThai, NgayTra = x.NgayTra,
+                PhuPhi = x.PhuPhi, ThuKhiTra = x.ThuKhiTra, GhiChu = x.GhiChu };
         }
-        public void Create(string customer, string product, DateTime start, DateTime end, decimal price, decimal paid)
-        {
 
-            if (string.IsNullOrWhiteSpace(customer) || string.IsNullOrWhiteSpace(product)) throw new InvalidOperationException("Nhập khách hàng và sản phẩm.");
-            if (end.Date < start.Date || price <= 0 || paid < 0 || paid > price) throw new InvalidOperationException("Ngày hoặc số tiền không hợp lệ.");
-            rentals.Add(new RentalContract { Ma=NextCode(), KhachHang=customer.Trim(), SanPham=product.Trim(), NgayThue=start.Date, HenTra=end.Date, TienThue=price, DaThu=paid, TrangThai="Đang thuê" });
+        public string Create(string customerCode, IEnumerable<RentalLine> requested, DateTime start, DateTime end, decimal paid)
+        {
+            AppSession.Require(Feature.Contracts, true);
+            if (data.IsPersistent) return data.Commit(current => new ContractService(current).Create(customerCode, requested, start, end, paid));
+            if (start.Date < DateTime.Today || end.Date < start.Date) throw new InvalidOperationException("Ngày thuê phải từ hôm nay; ngày trả không trước ngày thuê.");
+            if (requested == null) throw new InvalidOperationException("Thêm sản phẩm vào hợp đồng.");
+            var input = requested.ToList();
+            if (input.Count == 0 || input.Any(x => x == null || x.Quantity <= 0 || x.Quantity > 1000 || string.IsNullOrWhiteSpace(x.ProductCode)))
+                throw new InvalidOperationException("Mỗi sản phẩm cần số lượng từ 1 đến 1.000.");
+
+            lock (data.SyncRoot)
+            {
+                var customer = data.Customers.Rows.Find(customerCode ?? "");
+                if (customer == null) throw new InvalidOperationException("Chọn khách hàng có trong danh mục.");
+                var lines = new List<RentalLine>();
+                foreach (var group in input.GroupBy(x => x.ProductCode))
+                {
+                    var product = data.Products.Rows.Find(group.Key);
+                    int quantity = group.Sum(x => x.Quantity);
+                    if (product == null) throw new InvalidOperationException("Sản phẩm không tồn tại: " + group.Key);
+                    if (quantity > data.Available(group.Key, start, end)) throw new InvalidOperationException("Không đủ " + product["Tên trang phục"] + " trong khoảng thuê đã chọn.");
+                    decimal price = (decimal)product["Giá thuê"];
+                    if (price <= 0) throw new InvalidOperationException("Sản phẩm chưa có giá thuê hợp lệ.");
+                    lines.Add(new RentalLine { ProductCode = group.Key, ProductName = (string)product["Tên trang phục"], Category = (string)product["Loại"], Quantity = quantity, UnitPrice = price });
+                }
+                decimal total = lines.Sum(x => x.Total);
+                if (total > 1000000000m || paid < 0 || paid > total || decimal.Truncate(paid) != paid)
+                    throw new InvalidOperationException("Tổng tiền tối đa 1 tỷ; thu trước phải là số nguyên từ 0 đến tiền thuê.");
+                int sequence = data.Contracts.Select(x => { int n; return x.Ma != null && x.Ma.StartsWith("HD") && int.TryParse(x.Ma.Substring(2), out n) ? n : 0; }).DefaultIfEmpty().Max() + 1;
+                var rental = new RentalContract { Ma = "HD" + sequence.ToString("D4"), CustomerCode = customerCode, KhachHang = (string)customer["Họ và tên"],
+                    Lines = lines, SanPham = string.Join("; ", lines.Select(x => x.ProductName + " × " + x.Quantity)), NgayThue = start.Date, HenTra = end.Date,
+                    TienThue = total, DaThu = paid, TrangThai = RentalStatus.Active };
+                data.Contracts.Add(rental);
+                data.RecordPayment(rental, paid, DateTime.Today, "Thu trước tiền thuê");
+                return rental.Ma;
+            }
         }
-        public void Cancel(string code)
-        {
 
-            var r=rentals.SingleOrDefault(x=>x.Ma==code);
-            if (r==null || r.TrangThai!="Đang thuê" || r.DaThu!=0) throw new InvalidOperationException("Chỉ hủy hợp đồng đang thuê và chưa thu tiền.");
-            r.TrangThai="Đã hủy";
+        public void Cancel(string code, string reason = "")
+        {
+            AppSession.Require(Feature.Contracts, true);
+            if (data.IsPersistent) { data.Commit(current => new ContractService(current).Cancel(code, reason)); return; }
+            lock (data.SyncRoot)
+            {
+                var rental = data.Contracts.SingleOrDefault(x => x.Ma == code);
+                if (rental == null || rental.TrangThai != RentalStatus.Active)
+                    throw new InvalidOperationException("Chỉ hủy hợp đồng đang thuê.");
+                if (rental.DaThu > 0)
+                {
+                    if (AppSession.User.Role != Roles.Manager) throw new InvalidOperationException("Hợp đồng đã thu tiền cần quản lý xác nhận hoàn tiền.");
+                    reason = InputRules.Required(reason, "Lý do hoàn tiền", 1000);
+                    data.RecordPayment(rental, rental.DaThu, DateTime.Today, "Hoàn tiền khi hủy: " + reason, true);
+                    rental.DaThu = 0;
+                }
+                rental.GhiChu = (reason ?? "").Trim();
+                rental.TrangThai = RentalStatus.Cancelled;
+            }
         }
     }
 }

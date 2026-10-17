@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO;
@@ -8,292 +9,141 @@ namespace LuxuryBridalStudio
 {
     public partial class frmSanPham : Form
     {
-        private DataTable dtSanPham = new DataTable();
-        private bool isThemMoi = false;
-        private const string PLACEHOLDER_TEXT = "Nhập tên váy cưới, vest...";
+        private readonly CatalogService catalog = new CatalogService(AppSession.Data);
+        private DataView view;
+        private string selectedCode;
+        private bool adding;
+        private const string Placeholder = "Nhập tên váy cưới, vest...";
 
-        public frmSanPham()
-        {
-            InitializeComponent();
-        }
+        public frmSanPham() { InitializeComponent(); }
 
         private void frmSanPham_Load(object sender, EventArgs e)
         {
-            KhoiTaoDuLieuBanDau();
-            GanSuKien();
-            CaiDatPlaceholder();
-
-            cboLoaiSP.SelectedIndex = 0;
-            cboMauSac.SelectedIndex = 0;
-            cboNoiSX.SelectedIndex = 0;
-
-            if (dgvSanPham.Rows.Count > 0)
-            {
-                HienThiChiTiet(0);
-            }
-        }
-
-        #region PLACEHOLDER VÀ SỰ KIỆN TÌM KIẾM
-        private void CaiDatPlaceholder()
-        {
-            txtTuKhoa.Text = PLACEHOLDER_TEXT;
-            txtTuKhoa.ForeColor = Color.Gray;
-
-            txtTuKhoa.Enter += (s, e) =>
-            {
-                if (txtTuKhoa.Text == PLACEHOLDER_TEXT)
-                {
-                    txtTuKhoa.Text = "";
-                    txtTuKhoa.ForeColor = Color.Black;
-                }
-            };
-
-            txtTuKhoa.Leave += (s, e) =>
-            {
-                if (string.IsNullOrWhiteSpace(txtTuKhoa.Text))
-                {
-                    txtTuKhoa.Text = PLACEHOLDER_TEXT;
-                    txtTuKhoa.ForeColor = Color.Gray;
-                }
-            };
-        }
-
-        private void GanSuKien()
-        {
-            dgvSanPham.CellClick += DgvSanPham_CellClick;
-            dgvSanPham.CellFormatting += DgvSanPham_CellFormatting;
-
-            btnThemSP.Click += BtnThemSP_Click;
-            btnLuu.Click += BtnLuu_Click;
-            btnXoa.Click += BtnXoa_Click;
-            btnLamMoi.Click += BtnLamMoi_Click;
-            btnChonAnh.LinkClicked += BtnChonAnh_LinkClicked;
-
-            // Chỉ lọc khi nhấn nút Tra cứu hoặc gõ xong ấn Enter
-            btnTraCuu.Click += (s, e) => ThucHienLocDuLieu();
-            txtTuKhoa.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    e.SuppressKeyPress = true;
-                    ThucHienLocDuLieu();
-                }
-            };
-        }
-        #endregion
-
-        #region KHỞI TẠO DỮ LIỆU MOCK DATA
-        private void KhoiTaoDuLieuBanDau()
-        {
-            dtSanPham.Columns.Clear();
-            dtSanPham.Columns.Add("Mã SP");
-            dtSanPham.Columns.Add("Tên trang phục");
-            dtSanPham.Columns.Add("Loại");
-            dtSanPham.Columns.Add("Màu sắc");
-            dtSanPham.Columns.Add("Nơi SX");
-            dtSanPham.Columns.Add("Tồn kho", typeof(int));
-            dtSanPham.Columns.Add("Giá thuê");
-            dtSanPham.Columns.Add("Giá nhập");
-            dtSanPham.Columns.Add("HinhAnh"); // Lưu đường dẫn ảnh nếu có
-
-            dtSanPham.Rows.Add("SP001", "Váy cưới công chúa đính đá", "Váy cưới", "Trắng", "Việt Nam", 2, "3.500.000 đ", "10.000.000 đ", "");
-            dtSanPham.Rows.Add("SP002", "Váy cưới cúp ngực Satin", "Váy cưới", "Trắng kem", "Hàn Quốc", 1, "2.800.000 đ", "8.000.000 đ", "");
-            dtSanPham.Rows.Add("SP003", "Vest chú rể classic đen", "Vest", "Đen", "Việt Nam", 4, "1.500.000 đ", "3.000.000 đ", "");
-            dtSanPham.Rows.Add("SP004", "Áo dài cưới Long Phụng", "Áo dài", "Đỏ thẫm", "Việt Nam", 0, "Hết hàng", "4.000.000 đ", "");
-            dtSanPham.Rows.Add("SP005", "Váy cưới đuôi cá phối ren", "Váy cưới", "Trắng", "Pháp", 3, "4.200.000 đ", "12.000.000 đ", "");
-
-            dgvSanPham.DataSource = dtSanPham;
-            dgvSanPham.Columns["Giá nhập"].Visible = false;
+            AppSession.Require(Feature.Products);
+            nudSoLuongTon.Maximum = 1000000;
+            lblTonKhoDetail.Text = "Tổng số bộ";
+            foreach (var combo in new[] { cboLoaiSP, cboLoaiSPDetail })
+                if (!combo.Items.Contains("Phụ kiện")) combo.Items.Add("Phụ kiện");
+            foreach (var combo in new[] { cboLoaiSP, cboMauSac, cboNoiSX, cboLoaiSPDetail, cboMauSacDetail, cboNoiSXDetail })
+                combo.DropDownStyle = ComboBoxStyle.DropDownList;
+            view = new DataView(AppSession.Data.Products);
+            dgvSanPham.SelectionChanged += (s, a) => SelectRow();
+            dgvSanPham.DataSource = view;
+            dgvSanPham.MultiSelect = false;
+            dgvSanPham.Columns["Giá nhập"].Visible = AppSession.User.Can(Feature.Products, true);
             dgvSanPham.Columns["HinhAnh"].Visible = false;
+            dgvSanPham.Columns["Tồn kho"].HeaderText = "Tổng số bộ";
+            dgvSanPham.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            dgvSanPham.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            foreach (DataGridViewColumn column in dgvSanPham.Columns) column.Width = 110;
+            dgvSanPham.Columns["Mã SP"].Width = 75;
+            dgvSanPham.Columns["Tên trang phục"].Width = 220;
+            BridalFeatureUi.FormatGrid(dgvSanPham);
+            BridalFeatureUi.Placeholder(txtTuKhoa, Placeholder);
+            BridalFeatureUi.Wire(btnThemSP, () =>
+            {
+                ResetEditor(); dgvSanPham.ClearSelection(); adding = true;
+                txtMaSP.Text = InputRules.NextCode(AppSession.Data.Products, "SP"); txtTenSP.Focus();
+            });
+            BridalFeatureUi.Wire(btnLuu, Save);
+            BridalFeatureUi.Wire(btnXoa, Delete);
+            BridalFeatureUi.Wire(btnLamMoi, () =>
+            {
+                txtTuKhoa.Clear(); cboLoaiSP.SelectedIndex = cboMauSac.SelectedIndex = cboNoiSX.SelectedIndex = 0;
+                view.RowFilter = ""; dgvSanPham.ClearSelection(); ResetEditor();
+            });
+            BridalFeatureUi.Wire(btnTraCuu, Filter);
+            txtTuKhoa.KeyDown += (s, a) => { if (a.KeyCode == Keys.Enter) { a.SuppressKeyPress = true; BridalFeatureUi.Run(Filter); } };
+            btnChonAnh.LinkClicked += (s, a) => BridalFeatureUi.Run(ChooseImage);
+            bool editable = AppSession.User.Can(Feature.Products, true);
+            txtGiaNhap.Visible = lblGiaNhap.Visible = editable;
+            btnThemSP.Enabled = btnLuu.Enabled = btnXoa.Enabled = btnChonAnh.Enabled = editable;
+            foreach (Control input in new Control[] { txtTenSP, txtGiaThue, txtGiaNhap, nudSoLuongTon, cboLoaiSPDetail, cboMauSacDetail, cboNoiSXDetail }) input.Enabled = editable;
+            cboLoaiSP.SelectedIndex = cboMauSac.SelectedIndex = cboNoiSX.SelectedIndex = 0;
+            Disposed += (s, a) => { if (picAnhSP.Image != null) picAnhSP.Image.Dispose(); view.Dispose(); };
+            SelectRow();
         }
 
-        // Định dạng màu chữ "Hết hàng" thành màu đỏ nhạt như trong ảnh mockup
-        private void DgvSanPham_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void ResetEditor()
         {
-            if (dgvSanPham.Columns[e.ColumnIndex].Name == "Giá thuê" && e.Value != null)
-            {
-                if (e.Value.ToString() == "Hết hàng")
-                {
-                    e.CellStyle.ForeColor = Color.FromArgb(215, 80, 95);
-                    e.CellStyle.SelectionForeColor = Color.FromArgb(215, 80, 95);
-                    e.CellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-                }
-            }
+            selectedCode = null; adding = false;
+            txtMaSP.Clear(); txtTenSP.Clear(); txtGiaNhap.Clear(); txtGiaThue.Clear(); nudSoLuongTon.Value = 0;
+            cboLoaiSPDetail.SelectedIndex = cboMauSacDetail.SelectedIndex = cboNoiSXDetail.SelectedIndex = 0;
+            SetImage(null, "");
         }
-        #endregion
 
-        #region XỬ LÝ CHI TIẾT VÀ CHỌN ẢNH
-        private void DgvSanPham_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void SelectRow()
         {
-            if (e.RowIndex >= 0 && e.RowIndex < dgvSanPham.Rows.Count)
+            var row = dgvSanPham.SelectedRows.Count == 0 ? null : dgvSanPham.SelectedRows[0].DataBoundItem as DataRowView;
+            ResetEditor();
+            if (row == null) return;
+            selectedCode = Convert.ToString(row[0]); txtMaSP.Text = selectedCode;
+            txtTenSP.Text = Convert.ToString(row["Tên trang phục"]);
+            cboLoaiSPDetail.SelectedItem = row["Loại"]; cboMauSacDetail.SelectedItem = row["Màu sắc"]; cboNoiSXDetail.SelectedItem = row["Nơi SX"];
+            nudSoLuongTon.Value = (int)row["Tồn kho"];
+            txtGiaNhap.Text = InputRules.Money((decimal)row["Giá nhập"]);
+            txtGiaThue.Text = InputRules.Money((decimal)row["Giá thuê"]);
+            string path = Convert.ToString(row["HinhAnh"]);
+            picAnhSP.Tag = path;
+            if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
             {
-                isThemMoi = false;
-                HienThiChiTiet(e.RowIndex);
+                try { LoadImage(path); }
+                catch (InvalidOperationException) { SetImage(null, path); }
             }
         }
 
-        private void HienThiChiTiet(int rowIndex)
+        private void SetImage(Image image, string path)
         {
-            DataGridViewRow row = dgvSanPham.Rows[rowIndex];
-            txtMaSP.Text = row.Cells["Mã SP"].Value?.ToString();
-            txtTenSP.Text = row.Cells["Tên trang phục"].Value?.ToString();
-            cboLoaiSPDetail.SelectedItem = row.Cells["Loại"].Value?.ToString();
-            cboMauSacDetail.SelectedItem = row.Cells["Màu sắc"].Value?.ToString();
-            cboNoiSXDetail.SelectedItem = row.Cells["Nơi SX"].Value?.ToString();
-
-            int tonKho = 0;
-            int.TryParse(row.Cells["Tồn kho"].Value?.ToString(), out tonKho);
-            nudSoLuongTon.Value = tonKho;
-
-            txtGiaNhap.Text = row.Cells["Giá nhập"].Value?.ToString();
-            txtGiaThue.Text = row.Cells["Giá thuê"].Value?.ToString();
-
-            string duongDanAnh = row.Cells["HinhAnh"].Value?.ToString();
-            if (!string.IsNullOrEmpty(duongDanAnh) && File.Exists(duongDanAnh))
-            {
-                picAnhSP.Image = Image.FromFile(duongDanAnh);
-            }
-            else
-            {
-                picAnhSP.Image = null; // Trống nếu chưa có ảnh
-            }
+            var previous = picAnhSP.Image; picAnhSP.Image = image; picAnhSP.Tag = path;
+            if (previous != null) previous.Dispose();
         }
 
-        private void BtnChonAnh_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void LoadImage(string path)
         {
-            using (OpenFileDialog ofd = new OpenFileDialog())
+            try
             {
-                ofd.Filter = "Image Files (*.jpg;*.jpeg;*.png;*.jfif)|*.jpg;*.jpeg;*.png;*.jfif";
-                ofd.Title = "Chọn ảnh sản phẩm";
-
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    picAnhSP.Image = Image.FromFile(ofd.FileName);
-                    picAnhSP.Tag = ofd.FileName; // Lưu tạm đường dẫn ảnh
-                }
+                using (var source = Image.FromFile(path)) SetImage(new Bitmap(source), path);
+            }
+            catch (Exception ex) when (ex is IOException || ex is ArgumentException || ex is UnauthorizedAccessException || ex is OutOfMemoryException)
+            {
+                throw new InvalidOperationException("Không đọc được ảnh. Hãy chọn file JPG hoặc PNG hợp lệ.", ex);
             }
         }
-        #endregion
 
-        #region THAO TÁC THÊM, SỬA, XÓA, LỌC
-        private void BtnThemSP_Click(object sender, EventArgs e)
+        private void ChooseImage()
         {
-            isThemMoi = true;
-            LamMoiFormNhap();
-
-            int nextId = dtSanPham.Rows.Count + 1;
-            txtMaSP.Text = "SP" + nextId.ToString("D3");
-            txtTenSP.Focus();
+            AppSession.Require(Feature.Products, true);
+            using (var dialog = new OpenFileDialog { Filter = "Ảnh (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png" })
+                if (dialog.ShowDialog(this) == DialogResult.OK) LoadImage(dialog.FileName);
         }
 
-        private void BtnLuu_Click(object sender, EventArgs e)
+        private void Save()
         {
-            if (string.IsNullOrWhiteSpace(txtTenSP.Text))
-            {
-                MessageBox.Show("Vui lòng nhập tên sản phẩm!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTenSP.Focus();
-                return;
-            }
-
-            string maSP = txtMaSP.Text.Trim();
-            string anhPath = picAnhSP.Tag != null ? picAnhSP.Tag.ToString() : "";
-            DataRow[] foundRows = dtSanPham.Select($"[Mã SP] = '{maSP}'");
-
-            if (isThemMoi || foundRows.Length == 0)
-            {
-                dtSanPham.Rows.Add(maSP, txtTenSP.Text.Trim(), cboLoaiSPDetail.Text, cboMauSacDetail.Text,
-                                   cboNoiSXDetail.Text, (int)nudSoLuongTon.Value, txtGiaThue.Text.Trim(),
-                                   txtGiaNhap.Text.Trim(), anhPath);
-                MessageBox.Show("Thêm mới sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                isThemMoi = false;
-            }
-            else
-            {
-                foundRows[0]["Tên trang phục"] = txtTenSP.Text.Trim();
-                foundRows[0]["Loại"] = cboLoaiSPDetail.Text;
-                foundRows[0]["Màu sắc"] = cboMauSacDetail.Text;
-                foundRows[0]["Nơi SX"] = cboNoiSXDetail.Text;
-                foundRows[0]["Tồn kho"] = (int)nudSoLuongTon.Value;
-                foundRows[0]["Giá thuê"] = txtGiaThue.Text.Trim();
-                foundRows[0]["Giá nhập"] = txtGiaNhap.Text.Trim();
-                if (!string.IsNullOrEmpty(anhPath))
-                {
-                    foundRows[0]["HinhAnh"] = anhPath;
-                }
-                MessageBox.Show("Cập nhật thông tin sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            if (!adding && selectedCode == null) throw new InvalidOperationException("Chọn sản phẩm hoặc bấm Thêm mới trước khi lưu.");
+            string code = catalog.SaveProduct(adding ? null : selectedCode, txtTenSP.Text, cboLoaiSPDetail.Text, cboMauSacDetail.Text,
+                cboNoiSXDetail.Text, (int)nudSoLuongTon.Value, InputRules.ParseMoney(txtGiaThue.Text), InputRules.ParseMoney(txtGiaNhap.Text), Convert.ToString(picAnhSP.Tag));
+            view.RowFilter = "";
+            foreach (DataGridViewRow row in dgvSanPham.Rows)
+                if (Convert.ToString(((DataRowView)row.DataBoundItem)[0]) == code) { dgvSanPham.CurrentCell = row.Cells[0]; row.Selected = true; SelectRow(); break; }
         }
 
-        private void BtnXoa_Click(object sender, EventArgs e)
+        private void Delete()
         {
-            if (string.IsNullOrWhiteSpace(txtMaSP.Text))
-            {
-                MessageBox.Show("Vui lòng chọn sản phẩm muốn xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            DialogResult res = MessageBox.Show($"Bạn có chắc muốn xóa sản phẩm [{txtTenSP.Text}] không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (res == DialogResult.Yes)
-            {
-                DataRow[] rows = dtSanPham.Select($"[Mã SP] = '{txtMaSP.Text.Trim()}'");
-                if (rows.Length > 0)
-                {
-                    dtSanPham.Rows.Remove(rows[0]);
-                    LamMoiFormNhap();
-                    MessageBox.Show("Đã xóa sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
+            if (selectedCode == null) throw new InvalidOperationException("Chọn sản phẩm cần xóa.");
+            if (!BridalFeatureUi.Confirm("Xóa sản phẩm " + selectedCode + "?")) return;
+            catalog.Delete(Feature.Products, selectedCode); SelectRow();
         }
 
-        private void BtnLamMoi_Click(object sender, EventArgs e)
+        private void Filter()
         {
-            isThemMoi = false;
-            LamMoiFormNhap();
-            txtTuKhoa.Text = PLACEHOLDER_TEXT;
-            txtTuKhoa.ForeColor = Color.Gray;
-            cboLoaiSP.SelectedIndex = 0;
-            cboMauSac.SelectedIndex = 0;
-            cboNoiSX.SelectedIndex = 0;
-            dtSanPham.DefaultView.RowFilter = "";
+            var filters = new List<string>();
+            if (cboLoaiSP.SelectedIndex > 0) filters.Add("[Loại] = '" + cboLoaiSP.Text.Replace("'", "''") + "'");
+            if (cboMauSac.SelectedIndex > 0) filters.Add("[Màu sắc] = '" + cboMauSac.Text.Replace("'", "''") + "'");
+            if (cboNoiSX.SelectedIndex > 0) filters.Add("[Nơi SX] = '" + cboNoiSX.Text.Replace("'", "''") + "'");
+            string search = InputRules.SearchFilter(txtTuKhoa.Text == Placeholder ? "" : txtTuKhoa.Text, "Mã SP", "Tên trang phục");
+            if (search.Length > 0) filters.Add("(" + search + ")");
+            view.RowFilter = string.Join(" AND ", filters);
+            SelectRow();
         }
-
-        private void LamMoiFormNhap()
-        {
-            txtMaSP.Text = "";
-            txtTenSP.Text = "";
-            nudSoLuongTon.Value = 0;
-            txtGiaNhap.Text = "";
-            txtGiaThue.Text = "";
-            picAnhSP.Image = null;
-            picAnhSP.Tag = null;
-        }
-
-        private void ThucHienLocDuLieu()
-        {
-            string filter = "1=1";
-
-            if (cboLoaiSP.SelectedIndex > 0)
-                filter += $" AND [Loại] = '{cboLoaiSP.Text}'";
-
-            if (cboMauSac.SelectedIndex > 0)
-                filter += $" AND [Màu sắc] = '{cboMauSac.Text}'";
-
-            if (cboNoiSX.SelectedIndex > 0)
-                filter += $" AND [Nơi SX] = '{cboNoiSX.Text}'";
-
-            string keyword = txtTuKhoa.Text.Trim().Replace("'", "''");
-            if (!string.IsNullOrEmpty(keyword) && keyword != PLACEHOLDER_TEXT)
-            {
-                filter += $" AND [Tên trang phục] LIKE '%{keyword}%'";
-            }
-
-            dtSanPham.DefaultView.RowFilter = filter;
-
-            if (dgvSanPham.Rows.Count > 0)
-            {
-                HienThiChiTiet(0);
-            }
-        }
-        #endregion
     }
 }

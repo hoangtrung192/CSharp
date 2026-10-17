@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -15,29 +15,29 @@ namespace LuxuryBridalStudio
     public partial class frmThongKe : Form
     {
         private readonly List<GiaoDichThongKe> duLieu;
-        private readonly bool laDuLieuMau;
+        private readonly bool sharedData;
         private readonly CultureInfo vi = CultureInfo.GetCultureInfo("vi-VN");
         private DataTable bangHienThi;
 
-        // Constructor không tham số dành cho Designer và chạy demo.
-        public frmThongKe() : this(TaoDuLieuMau(), true) { }
+        // Constructor không tham số dành cho Designer và dữ liệu của phiên hiện tại.
+        public frmThongKe() : this(AppSession.Data.Transactions) { }
 
         // Khi có DB: truyền danh sách giao dịch thực vào constructor này.
-        public frmThongKe(IEnumerable<GiaoDichThongKe> giaoDich) : this(giaoDich, false) { }
-
-        private frmThongKe(IEnumerable<GiaoDichThongKe> giaoDich, bool duLieuMau)
+        public frmThongKe(IEnumerable<GiaoDichThongKe> giaoDich)
         {
             if (giaoDich == null) throw new ArgumentNullException("giaoDich");
             duLieu = giaoDich.ToList();
+            sharedData = ReferenceEquals(giaoDich, AppSession.Data.Transactions);
             if (duLieu.Any(x => x == null || x.Thu < 0 || x.Hoan < 0))
                 throw new ArgumentException("Giao dịch không được null; số tiền thu và hoàn phải không âm.");
-            laDuLieuMau = duLieuMau;
             InitializeComponent();
+            Disposed += (s, e) => { if (bangHienThi != null) bangHienThi.Dispose(); };
         }
 
         private void frmThongKe_Load(object sender, EventArgs e)
         {
-            lblNguon.Text = laDuLieuMau ? "DỮ LIỆU MẪU • Chưa kết nối database" : "Dữ liệu được cung cấp từ ứng dụng";
+            AppSession.Require(Feature.Reports);
+            lblNguon.Text = "Giao dịch thuê / trả đã ghi nhận";
             cboNhom.SelectedIndex = 0;
             cboGom.SelectedIndex = 0;
             VeThangNay();
@@ -54,6 +54,12 @@ namespace LuxuryBridalStudio
         private void btnThangNay_Click(object sender, EventArgs e) { VeThangNay(); }
         private void btnLamMoi_Click(object sender, EventArgs e)
         {
+            if (sharedData)
+            {
+                try { AppSession.Data.Refresh(); }
+                catch (InvalidOperationException ex) { MessageBox.Show(this, ex.Message, "Không thể tải báo cáo"); return; }
+                duLieu.Clear(); duLieu.AddRange(AppSession.Data.Transactions);
+            }
             cboNhom.SelectedIndex = 0;
             cboGom.SelectedIndex = 0;
             VeThangNay();
@@ -61,6 +67,7 @@ namespace LuxuryBridalStudio
 
         private void ApDung()
         {
+            AppSession.Require(Feature.Reports);
             DateTime tu = dtpTuNgay.Value.Date, den = dtpDenNgay.Value.Date;
             if (tu > den)
             {
@@ -151,6 +158,7 @@ namespace LuxuryBridalStudio
 
         private void btnXuat_Click(object sender, EventArgs e)
         {
+            AppSession.Require(Feature.Reports);
             if (bangHienThi == null || bangHienThi.Rows.Count == 0) return;
             using (var hop = new SaveFileDialog { Filter = "CSV (*.csv)|*.csv", FileName = "ThongKe_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + ".csv" })
             {
@@ -178,38 +186,5 @@ namespace LuxuryBridalStudio
             return "\"" + s.Replace("\"", "\"\"") + "\"";
         }
 
-        private static List<GiaoDichThongKe> TaoDuLieuMau()
-        {
-            var ds = new List<GiaoDichThongKe>();
-            string[] nhom = { "Váy cưới", "Vest", "Áo dài", "Phụ kiện" };
-            string[] khach = { "Nguyễn Mai", "Trần Linh", "Đỗ Hà", "Lê Minh", "Phạm Anh" };
-            DateTime dau = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-5);
-            int i = 0;
-            for (DateTime ngay = dau; ngay <= DateTime.Today; ngay = ngay.AddDays(1))
-            {
-                if (ngay.Day % 4 == 0) continue;
-                for (int j = 0; j < 2; j++)
-                {
-                    i++;
-                    bool hoan = i % 9 == 0;
-                    ds.Add(new GiaoDichThongKe { Ma = "GD" + i.ToString("D5"), Ngay = ngay,
-                        KhachHang = khach[i % khach.Length], Nhom = nhom[i % 4],
-                        NoiDung = hoan ? "Hoàn tiền khách hàng" : "Thu tiền thuê trang phục",
-                        Thu = hoan ? 0 : 500000m + i % 8 * 350000m, Hoan = hoan ? 350000m : 0 });
-                }
-            }
-            return ds;
-        }
-    }
-
-    public sealed class GiaoDichThongKe
-    {
-        public string Ma { get; set; }
-        public DateTime Ngay { get; set; }
-        public string KhachHang { get; set; }
-        public string Nhom { get; set; }
-        public string NoiDung { get; set; }
-        public decimal Thu { get; set; }
-        public decimal Hoan { get; set; }
     }
 }

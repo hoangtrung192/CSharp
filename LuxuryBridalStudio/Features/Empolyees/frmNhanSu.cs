@@ -14,12 +14,15 @@ namespace LuxuryBridalStudio
     {
         private readonly EmployeeService service;
         private StaffMember selected;
-        public frmNhanSu() : this(new List<StaffMember>()) { }
+        public frmNhanSu() : this(AppSession.Data.Employees) { }
         public frmNhanSu(List<StaffMember> data)
         {
 
 
             InitializeComponent();
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
+            AppSession.Require(Feature.Employees);
+            BridalFeatureUi.FormatGrid(grid);
             service = new EmployeeService(data);
             role.Items.AddRange(new object[] { "Quản lý", "Nhân viên", "Thủ kho" }); role.SelectedIndex = 1;
             Wire(btnAction1, () => SaveEmployee(true)); Wire(btnAction2, () => SaveEmployee(false));
@@ -39,11 +42,8 @@ namespace LuxuryBridalStudio
         }
         private void SaveEmployee(bool add)
         {
-            string n = name.Text.Trim(), p = phone.Text.Trim();
-            BridalFeatureUi.Require(n.Length >= 2, "Họ tên phải có ít nhất 2 ký tự.");
-            BridalFeatureUi.Require(p.Length >= 9 && p.Length <= 11 && p.All(c => c >= '0' && c <= '9'), "Điện thoại cần 9–11 chữ số.");
             BridalFeatureUi.Require(add || selected != null, "Chọn nhân viên cần sửa.");
-            service.Save(add ? null : selected.Ma, n, p, role.Text, active.Checked);
+            service.Save(add ? null : selected.Ma, name.Text, phone.Text, role.Text, active.Checked);
             RefreshRows();
         }
         private void RefreshRows()

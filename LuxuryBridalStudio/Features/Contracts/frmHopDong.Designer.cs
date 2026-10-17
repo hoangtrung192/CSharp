@@ -15,8 +15,8 @@ namespace LuxuryBridalStudio
         {
             this.heading = new System.Windows.Forms.Label();
             this.grid = new System.Windows.Forms.DataGridView();
-            this.customer = new System.Windows.Forms.TextBox();
-            this.product = new System.Windows.Forms.TextBox();
+            this.customer = new System.Windows.Forms.ComboBox();
+            this.product = new System.Windows.Forms.ComboBox();
             this.search = new System.Windows.Forms.TextBox();
             this.start = new System.Windows.Forms.DateTimePicker();
             this.end = new System.Windows.Forms.DateTimePicker();
@@ -177,8 +177,8 @@ namespace LuxuryBridalStudio
         }
         private System.Windows.Forms.Label heading;
         private System.Windows.Forms.DataGridView grid;
-        private System.Windows.Forms.TextBox customer;
-        private System.Windows.Forms.TextBox product;
+        private System.Windows.Forms.ComboBox customer;
+        private System.Windows.Forms.ComboBox product;
         private System.Windows.Forms.TextBox search;
         private System.Windows.Forms.DateTimePicker start;
         private System.Windows.Forms.DateTimePicker end;
